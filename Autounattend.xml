@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+    <servicing>
+        <package action="configure">
+            <assemblyIdentity name="Microsoft-Windows-Foundation-Package" version="10.0.10586.0" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="" />
+            <selection name="Printing-Foundation-InternetPrinting-Client" state="false" />
+            <selection name="NetFx3" state="true" />
+            <selection name="IIS-WebServer" state="true" />
+            <selection name="IIS-WebServerRole" state="true" />
+            <selection name="IIS-CGI" state="true" />
+            <selection name="IIS-DefaultDocument" state="true" />
+            <selection name="IIS-HttpErrors" state="true" />
+            <selection name="IIS-HttpRedirect" state="true" />
+            <selection name="IIS-StaticContent" state="true" />
+            <selection name="IIS-CommonHttpFeatures" state="true" />
+            <selection name="IIS-ApplicationDevelopment" state="true" />
+            <selection name="IIS-HealthAndDiagnostics" state="true" />
+            <selection name="IIS-HttpLogging" state="true" />
+            <selection name="IIS-HttpCompressionStatic" state="true" />
+            <selection name="IIS-HttpCompressionDynamic" state="true" />
+            <selection name="IIS-Performance" state="true" />
+            <selection name="IIS-BasicAuthentication" state="true" />
+            <selection name="IIS-Security" state="true" />
+        </package>
+    </servicing>
+    <settings pass="windowsPE">
+        <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <SetupUILanguage>
+                <UILanguage>en-GB</UILanguage>
+            </SetupUILanguage>
+            <InputLocale>0809:00000809</InputLocale>
+            <SystemLocale>en-GB</SystemLocale>
+            <UILanguage>en-GB</UILanguage>
+            <UserLocale>en-GB</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <ImageInstall>
+                <OSImage>
+                    <InstallTo>
+                        <DiskID>0</DiskID>
+                        <PartitionID>4</PartitionID>
+                    </InstallTo>
+                    <WillShowUI>OnError</WillShowUI>
+                </OSImage>
+            </ImageInstall>
+            <DiskConfiguration>
+                <Disk wcm:action="add">
+                    <ModifyPartitions>
+                        <ModifyPartition wcm:action="add">
+                            <Format>NTFS</Format>
+                            <Label>Bug</Label>
+                            <Letter>C</Letter>
+                            <PartitionID>4</PartitionID>
+                            <Order>1</Order>
+                        </ModifyPartition>
+                    </ModifyPartitions>
+                    <DiskID>0</DiskID>
+                    <WillWipeDisk>false</WillWipeDisk>
+                </Disk>
+            </DiskConfiguration>
+            <UserData>
+                <AcceptEula>true</AcceptEula>
+                <FullName>David Allsopp</FullName>
+                <Organization>MetaStack Solutions Ltd.</Organization>
+                <ProductKey>
+                    <Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
+                    <WillShowUI>Never</WillShowUI>
+                </ProductKey>
+            </UserData>
+        </component>
+    </settings>
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>0809:00000809</InputLocale>
+            <SystemLocale>en-GB</SystemLocale>
+            <UILanguage>en-GB</UILanguage>
+            <UserLocale>en-GB</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-TapiSetup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <TapiUnattendLocation>
+                <AreaCode>01223</AreaCode>
+                <CountryOrRegion>44</CountryOrRegion>
+                <Name>Cambridge</Name>
+                <DisableCallWaiting />
+                <InternationalCarrierCode />
+                <LongDistanceAccess />
+                <LongDistanceCarrierCode />
+                <OutsideAccess />
+                <PulseOrToneDialing>1</PulseOrToneDialing>
+            </TapiUnattendLocation>
+            <TapiConfigured>1</TapiConfigured>
+        </component>
+        <component name="Microsoft-Windows-TerminalServices-LocalSessionManager" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <fDenyTSConnections>false</fDenyTSConnections>
+        </component>
+        <component name="Networking-MPSSVC-Svc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <FirewallGroups>
+                <FirewallGroup wcm:action="add" wcm:keyValue="RemoteDesktop">
+                    <Profile>all</Profile>
+                    <Group>@FirewallAPI.dll,-28752</Group>
+                    <Active>true</Active>
+                </FirewallGroup>
+            </FirewallGroups>
+            <DomainProfile_LogFile>%systemroot%\system32\LogFiles\Firewall\Domain.log</DomainProfile_LogFile>
+            <DomainProfile_LogFileSize>10240</DomainProfile_LogFileSize>
+            <DomainProfile_LogDroppedPackets>true</DomainProfile_LogDroppedPackets>
+            <PrivateProfile_LogDroppedPackets>true</PrivateProfile_LogDroppedPackets>
+            <PrivateProfile_LogFile>%systemroot%\system32\LogFiles\Firewall\Private.log</PrivateProfile_LogFile>
+            <PrivateProfile_LogFileSize>10240</PrivateProfile_LogFileSize>
+            <PublicProfile_LogDroppedPackets>true</PublicProfile_LogDroppedPackets>
+            <PublicProfile_LogFile>%systemroot%\system32\LogFiles\Firewall\Public.log</PublicProfile_LogFile>
+            <PublicProfile_LogFileSize>10240</PublicProfile_LogFileSize>
+        </component>
+        <component name="Microsoft-Windows-WiFiNetworkManager" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DefaultAutoConnectOpenState>0</DefaultAutoConnectOpenState>
+            <DefaultAutoConnectSharedState>0</DefaultAutoConnectSharedState>
+            <WiFiSenseAllowed>0</WiFiSenseAllowed>
+            <WiFiSharingFacebookInitial>0</WiFiSharingFacebookInitial>
+            <WiFiSharingOutlookInitial>0</WiFiSharingOutlookInitial>
+            <WiFiSharingSkypeInitial>0</WiFiSharingSkypeInitial>
+        </component>
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="wow64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>0809:00000809</InputLocale>
+            <UILanguage>en-GB</UILanguage>
+            <SystemLocale>en-GB</SystemLocale>
+            <UserLocale>en-GB</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <ProductKey>VK7JG-NPHTM-C97JM-9MPGT-3V66T</ProductKey>
+            <RegisteredOrganization>MetaStack Solutions Ltd.</RegisteredOrganization>
+            <RegisteredOwner>David Allsopp</RegisteredOwner>
+            <SignInMode>1</SignInMode>
+            <ComputerName>Bug</ComputerName>
+        </component>
+    </settings>
+    <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <InputLocale>0809:00000809</InputLocale>
+            <SystemLocale>en-GB</SystemLocale>
+            <UILanguage>en-GB</UILanguage>
+            <UserLocale>en-GB</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-WiFiNetworkManager" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DefaultAutoConnectOpenState>0</DefaultAutoConnectOpenState>
+            <DefaultAutoConnectSharedState>0</DefaultAutoConnectSharedState>
+            <WiFiSenseAllowed>0</WiFiSenseAllowed>
+            <WiFiSharingFacebookInitial>0</WiFiSharingFacebookInitial>
+            <WiFiSharingOutlookInitial>0</WiFiSharingOutlookInitial>
+            <WiFiSharingSkypeInitial>0</WiFiSharingSkypeInitial>
+        </component>
+        <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <OOBE>
+                <HideEULAPage>true</HideEULAPage>
+                <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+                <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+                <ProtectYourPC>3</ProtectYourPC>
+                <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+                <HideLocalAccountScreen>true</HideLocalAccountScreen>
+            </OOBE>
+            <UserAccounts>
+                <LocalAccounts>
+                    <LocalAccount wcm:action="add">
+                        <Password>
+                            <Value>cABhAHMAcwB3AG8AcgBkAFAAYQBzAHMAdwBvAHIAZAA=</Value>
+                            <PlainText>false</PlainText>
+                        </Password>
+                        <Description>User Account</Description>
+                        <DisplayName>David Allsopp</DisplayName>
+                        <Group>Administrators</Group>
+                        <Name>DRA</Name>
+                    </LocalAccount>
+                </LocalAccounts>
+            </UserAccounts>
+        </component>
+    </settings>
+    <cpi:offlineImage cpi:source="wim:c:/10/install.wim#Windows 10 Pro Technical Preview" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+</unattend>
