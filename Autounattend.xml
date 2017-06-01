@@ -3,7 +3,7 @@
     <servicing>
         <package action="configure">
             <assemblyIdentity name="Microsoft-Windows-Foundation-Package" version="10.0.10586.0" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="" />
-            <selection name="Printing-Foundation-InternetPrinting-Client" state="false" />
+            <selection name="Printing-Foundation-InternetPrinting-Client" state="true" />
             <selection name="NetFx3" state="true" />
             <selection name="IIS-WebServer" state="true" />
             <selection name="IIS-WebServerRole" state="true" />
@@ -21,6 +21,7 @@
             <selection name="IIS-Performance" state="true" />
             <selection name="IIS-BasicAuthentication" state="true" />
             <selection name="IIS-Security" state="true" />
+            <selection name="Printing-Foundation-Features" state="true" />
         </package>
     </servicing>
     <settings pass="windowsPE">
