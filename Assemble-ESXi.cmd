@@ -15,13 +15,16 @@ if "%DandIRoot%" equ "" goto ADK
 
 rem @@DRA At this point - need to get a working drivers tree from the other script for the correct version of ESXi and need Server 2016 ISO in place
 
+set WORK=D:\Working
+
+if "%1" equ "/job" goto Job_%2
+
 if "%1" equ "" goto ISO
 if not exist "%1\sources\boot.wim" goto ISO
 set FOUND=0
 if exist %1\sources\install.esd set FOUND=1
 if exist %1\sources\install.wim set FOUND=1
 
-set WORK=D:\Working
 if not exist "%WORK%\nul" md "%WORK%"
 if not exist "%WORK%\Temp\nul" md "%WORK%\Temp"
 set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70526-ESXi-10.3.5-10430147.iso
@@ -38,36 +41,46 @@ copy /y "%~dp0Autounattend-ESXi.xml" "%WORK%\"
 
 rem dism /Get-WimInfo /WimFile:{full-path} prints the index for both .wim and .esd files
 
-echo %TIME%
-
 rem Insert SATA driver into boot.wim
 rem Assume that Microsoft Windows Setup (x64) is Index 2 of boot.wim (Microsoft Windows PE should be Index 1)
 rem @@DRA Comments all wrong; also must ensure mount point is on a fixed disk, not a mapped drive
-if not exist %WORK%\Mount\nul md %WORK%\Mount
-set IMAGE=%WORK%\Mount
-for /l %%I in (1,1,2) do (
-  dism /Mount-Image /ImageFile:"%WORK%\DVD\sources\boot.wim" /Index:%%I /MountDir:"%IMAGE%"
-  rem dism /Image:"%IMAGE%" /Add-Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /ForceUnsigned
-  rem dism /Image:"%IMAGE%" /Add-Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf" /ForceUnsigned
-  dism /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
-  rem Only doing this in Index 2 in case there are other .cabs which should be installed to Image 1
-  if %%I equ 2 (
-    rem dism /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-WinPE-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
-    rem for %%P in (EnhancedStorage Scripting SecureStartup Setup Setup-Server SRT WDS-Tools WMI) do dism /Image:"%IMAGE%" /Remove-Package /PackageName:"WinPE-%%P-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
-    dism /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-WinPE-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-EnhancedStorage-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Scripting-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SecureStartup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Server-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SRT-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WDS-Tools-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WMI-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
-    rem @@DRA The cabinet files contain .mum files which will include the names of packages which are available - this would allow
-    rem       us to detect all the en-gb packages and swap them for en-US
-    rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\lp.cab"
-    rem for %%P in (EnhancedStorage Scripting SecureStartup Setup-Server SRT WDS-Tools WMI) do dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\WinPE-%%P_en-gb.cab"
-    dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\lp.cab" /PackagePath:"%WORK%\en-gb\WinPE-EnhancedStorage_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Scripting_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SecureStartup_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Setup-Server_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SRT_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WDS-Tools_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WMI_en-gb.cab" /ScratchDir:"%WORK%\Temp"
-    dism /Image:"%IMAGE%" /Distribution:"%WORK%\DVD" /Gen-LangINI
-    copy /y "%WORK%\DVD\sources\lang.ini" "%WORK%\Mount\sources\"
-    dism /Image:"%IMAGE%" /Set-AllIntl:en-GB
-    dism /Image:"%IMAGE%" /Set-SetupUILang:en-GB /Distribution:"%WORK%\DVD"
-    dism /Image:"%IMAGE%" /Set-TimeZone:"GMT Standard Time"
-  )
-  dism /Unmount-Image /MountDir:"%IMAGE%" /Commit
+rem @@DRA This should be probed...
+set BOOT_IMAGE_COUNT=2
+echo %TIME% Mounting boot images
+for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
+  if not exist "%WORK%\Mount-%%I" md "%WORK%\Mount-%%I"
+  dism /Quiet /Mount-Image /ImageFile:"%WORK%\DVD\sources\boot.wim" /Index:%%I /MountDir:"%WORK%\Mount-%%I"
 )
+echo %TIME% Mounting boot images done
+set /a T=%BOOT_IMAGE_COUNT%-1
+for /l %%I in (1,1,%T%) do start /b cmd /d /c "%0" /job Boot %%I
+
+call :InjectBootDrivers %BOOT_IMAGE_COUNT%
+set IMAGE=%WORK%\Mount-%BOOT_IMAGE_COUNT%
+rem Only doing this in Index 2 in case there are other .cabs which should be installed to Image 1
+echo %TIME% Removing en-US packages from Boot Image 2
+dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-WinPE-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-EnhancedStorage-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Scripting-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SecureStartup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Server-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SRT-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WDS-Tools-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WMI-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
+rem @@DRA The cabinet files contain .mum files which will include the names of packages which are available - this would allow
+rem       us to detect all the en-gb packages and swap them for en-US
+echo %TIME% Adding en-GB packages to Boot Image 2
+dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\lp.cab" /PackagePath:"%WORK%\en-gb\WinPE-EnhancedStorage_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Scripting_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SecureStartup_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Setup-Server_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SRT_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WDS-Tools_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WMI_en-gb.cab" /ScratchDir:"%WORK%\Temp"
+echo %TIME% Regenerating lang.ini
+dism /Quiet /Image:"%IMAGE%" /Distribution:"%WORK%\DVD" /Gen-LangINI
+echo %TIME% Copying lang.ini to boot image
+copy /y "%WORK%\DVD\sources\lang.ini" "%IMAGE%\sources\" >nul
+echo %TIME% Setting locale to en-GB
+dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
+dism /Quiet /Image:"%IMAGE%" /Set-SetupUILang:en-GB /Distribution:"%WORK%\DVD"
+echo %TIME% Setting Time Zone to GMT
+dism /Quiet /Image:"%IMAGE%" /Set-TimeZone:"GMT Standard Time"
+
+call :WaitJobs %T%
+
+echo %TIME% Unmounting boot images
+for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
+  dism /Quiet /Unmount-Image /MountDir:"%WORK%\Mount-%%I" /Commit
+)
+echo %TIME% Unmounting boot images done
 
 rem If install.wim is compressed, extract it. Assume that Professional edition is Index 1
 if exist "%WORK%\DVD\sources\install.esd" (
@@ -82,27 +95,26 @@ if exist "%WORK%\DVD\sources\install.esd" (
 
 rem Update install.wim
 rem @@DRA Should look up these indexes...
-for /l %%I in (1,1,4) do (
-  dism /Mount-Image /ImageFile:"%WORK%\DVD\sources\install.wim" /Index:%%I /MountDir:"%IMAGE%"
-  rem Insert drivers
-  rem dism /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers" /Recurse /ForceUnsigned
-  dism /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf" /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" /Driver:"%WORK%\Drivers\vmci\vmci.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
-  dism /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
-  rem Service Stack Updates
-  rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /ScratchDir:"%WORK%\Temp"
-  rem Packages and updates
-  dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4480961-x64_ada63f8d66b2c9994e03c3f5bffe56aff77edeb6.msu" /ScratchDir:"%WORK%\Temp"
-  rem Insert updates
-  rem @@DRA The ScratchDir should be parameterised and probably done everywhere (it's the cumulative update which is the problem)
-  rem for %%f in (%WORK%\Updates\*.msu) do dism /Add-Package /Image:"%IMAGE%" /PackagePath:"%%f" /ScratchDir:"%WORK%\Temp"
-  dism /Image:"%IMAGE%" /Set-AllIntl:en-GB
-  rem Add .NET Framework 3.5 on-demand package
-  rem @@@DRA Not doing this for now -- not sure why it was done in 2015 for the Windows 10 image
-  rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\DVD\sources\sxs\microsoft-windows-netfx3-ondemand-package.cab"
-  dism /Unmount-Image /MountDir:"%IMAGE%" /Commit
-)
+set IMAGE_COUNT=4
+set /a T=%IMAGE_COUNT%-1
 
-echo %TIME%
+echo %TIME% Mounting installation images
+for /l %%I in (1,1,%IMAGE_COUNT%) do (
+  if not exist "%WORK%\Mount-%%I" md "%WORK%\Mount-%%I"
+  dism /Quiet /Mount-Image /ImageFile:"%WORK%\DVD\sources\install.wim" /Index:%%I /MountDir:"%WORK%\Mount-%%I"
+)
+echo %TIME% Mounting installation images done
+
+for /l %%I in (1,1,%T%) do start /b cmd /d /c "%0" /job Image %%I
+call :ProcessImage %IMAGE_COUNT%
+
+call :WaitJobs %T%
+
+echo %TIME% Unmounting installation images
+for /l %%I in (1,1,%IMAGE_COUNT%) do (
+  dism /Quiet /Unmount-Image /MountDir:"%WORK%\Mount-%%I" /Commit
+)
+echo %TIME% Unmounting installation images done
 
 rem Drivers and updates will make install.wim too large for a DVD - (re)compress to install.esd
 rem @@DRA Not doing this yet - don't know if it's needed (and updates not being installed)
@@ -139,6 +151,49 @@ goto :EOF
 :Clear
 echo An existing DVD directory, install.esd or %ISO_FILE% file has been found in
 echo %WORK% - please delete them first.
+goto :EOF
+
+:InjectBootDrivers
+echo %TIME% Injecting boot drivers into %WORK%\Mount-%1
+dism /Quiet /Image:"%WORK%\Mount-%1" /Add-Driver /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
+goto :EOF
+
+:Job_Boot
+call :InjectBootDrivers %3
+echo Done>Job-Done-%3
+goto :EOF
+
+:WaitJobs
+for /l %%I in (1,1,%1) do (
+  call :WaitJob %%I
+  del Job-Done-%%I
+)
+goto :EOF
+
+:WaitJob
+:Loop
+if exist Job-Done-%1 goto :EOF
+timeout /nobreak /t 1 > nul
+goto Loop
+
+:Job_Image
+call :ProcessImage %3
+echo Done>Job-Done-%3
+goto :EOF
+
+:ProcessImage
+set IMAGE=%WORK%\Mount-%1
+echo %TIME% Injecting drivers into Install image %1
+dism /Quiet /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf" /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" /Driver:"%WORK%\Drivers\vmci\vmci.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
+echo %TIME% Removing en-US from Install image %1
+dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
+echo %TIME% Adding en-GB and updates to Install image %1
+dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4480961-x64_ada63f8d66b2c9994e03c3f5bffe56aff77edeb6.msu" /ScratchDir:"%WORK%\Temp"
+echo %TIME% Setting locale to en-GB in Install image %1
+dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
+rem Add .NET Framework 3.5 on-demand package
+rem @@@DRA Not doing this for now -- not sure why it was done in 2015 for the Windows 10 image
+rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\DVD\sources\sxs\microsoft-windows-netfx3-ondemand-package.cab"
 goto :EOF
 
 :: :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ::
