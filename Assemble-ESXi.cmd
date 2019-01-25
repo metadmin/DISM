@@ -28,8 +28,8 @@ set FOUND=0
 if exist %1\sources\install.esd set FOUND=1
 if exist %1\sources\install.wim set FOUND=1
 
-if not exist "%WORK%\nul" md "%WORK%"
-if not exist "%WORK%\Temp\nul" md "%WORK%\Temp"
+:: if exist doesn't support quotes...
+pushd "%WORK%\Temp" && popd || md "%WORK%\Temp"
 set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70526-ESXi-10.3.5-10430147-2019-01-17.iso
 if %FOUND% equ 0 goto ISO
 if "%~dp0" neq "%CD%\" goto Working
