@@ -149,7 +149,7 @@ goto :EOF
 
 :InjectBootDrivers
 echo %TIME% Injecting boot drivers into %WORK%\Mount-%1
-dism /Quiet /Image:"%WORK%\Mount-%1" /Add-Driver /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
+dism /Quiet /Image:"%WORK%\Mount-%1" /Add-Driver /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
 goto :EOF
 
 :Job_Boot
@@ -178,7 +178,7 @@ goto :EOF
 :ProcessImage
 set IMAGE=%WORK%\Mount-%1
 echo %TIME% Injecting drivers into Install image %1
-dism /Quiet /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf" /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" /Driver:"%WORK%\Drivers\vmci\vmci.inf" /Driver:"%WORK%\Drivers\vmxnet3\vmxnet3.inf"
+dism /Quiet /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf" /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" /Driver:"%WORK%\Drivers\vmci\device\Win8\vmci.inf" /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
 echo %TIME% Removing en-US from Install image %1
 dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
 echo %TIME% Adding en-GB and updates to Install image %1
