@@ -35,6 +35,9 @@ if %FOUND% equ 0 goto ISO
 if "%~dp0" neq "%CD%\" goto Working
 for %%f in (%WORK%\DVD\nul %WORK%\install.esd %WORK%\%ISO_FILE%) do if exist %%f goto Clear
 
+:: This errors if Windows Defender is disabled
+for /f "delims=" %%D in ('powershell -Command "(Get-MpComputerStatus).AntivirusEnabled"') do set DEFENDER=%%D
+if "%DEFENDER%" equ " " goto Continue
 for /f "delims=" %%D in ('powershell -Command "(Get-MpPreference).DisableRealtimeMonitoring"') do set DEFENDER=%%D
 if "%LEAVE_DEFENDER%" equ "" goto Continue
 if "%DEFENDER%" equ "True" goto Continue
