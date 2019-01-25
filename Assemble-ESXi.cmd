@@ -46,10 +46,8 @@ rem Assume that Microsoft Windows Setup (x64) is Index 2 of boot.wim (Microsoft 
 rem @@DRA Comments all wrong; also must ensure mount point is on a fixed disk, not a mapped drive
 rem @@DRA This should be probed...
 set BOOT_IMAGE_COUNT=2
-echo %TIME% Mounting boot images
 for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
-  if not exist "%WORK%\Mount-%%I" md "%WORK%\Mount-%%I"
-  dism /Quiet /Mount-Image /ImageFile:"%WORK%\DVD\sources\boot.wim" /Index:%%I /MountDir:"%WORK%\Mount-%%I"
+  call :Mount "%WORK%\DVD\sources\boot.wim" %%I "%WORK%\Mount-%%I"
 )
 echo %TIME% Mounting boot images done
 set /a T=%BOOT_IMAGE_COUNT%-1
@@ -76,9 +74,8 @@ dism /Quiet /Image:"%IMAGE%" /Set-TimeZone:"GMT Standard Time"
 
 call :WaitJobs %T%
 
-echo %TIME% Unmounting boot images
 for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
-  dism /Quiet /Unmount-Image /MountDir:"%WORK%\Mount-%%I" /Commit
+  call :Unmount "%WORK%\Mount-%%I"
 )
 echo %TIME% Unmounting boot images done
 
@@ -98,10 +95,8 @@ rem @@DRA Should look up these indexes...
 set IMAGE_COUNT=4
 set /a T=%IMAGE_COUNT%-1
 
-echo %TIME% Mounting installation images
 for /l %%I in (1,1,%IMAGE_COUNT%) do (
-  if not exist "%WORK%\Mount-%%I" md "%WORK%\Mount-%%I"
-  dism /Quiet /Mount-Image /ImageFile:"%WORK%\DVD\sources\install.wim" /Index:%%I /MountDir:"%WORK%\Mount-%%I"
+  call :Mount "%WORK%\DVD\sources\install.wim" %%I "%WORK%\Mount-%%I"
 )
 echo %TIME% Mounting installation images done
 
@@ -110,9 +105,8 @@ call :ProcessImage %IMAGE_COUNT%
 
 call :WaitJobs %T%
 
-echo %TIME% Unmounting installation images
 for /l %%I in (1,1,%IMAGE_COUNT%) do (
-  dism /Quiet /Unmount-Image /MountDir:"%WORK%\Mount-%%I" /Commit
+  call :Unmount "%WORK%\Mount-%%I"
 )
 echo %TIME% Unmounting installation images done
 
@@ -194,6 +188,17 @@ dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
 rem Add .NET Framework 3.5 on-demand package
 rem @@@DRA Not doing this for now -- not sure why it was done in 2015 for the Windows 10 image
 rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\DVD\sources\sxs\microsoft-windows-netfx3-ondemand-package.cab"
+goto :EOF
+
+:Mount
+if not exist %3 md %3
+echo %TIME% Mounting %1 index %2 in %3
+dism /Quiet /Mount-Image /ImageFile:%1 /Index:%2 /MountDir:%3
+goto :EOF
+
+:Unmount
+echo %TIME% Unmounting %1
+dism /Quiet /Unmount-Image /MountDir:%1 /Commit
 goto :EOF
 
 :: :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: ::
