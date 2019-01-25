@@ -30,7 +30,7 @@ if exist %1\sources\install.wim set FOUND=1
 
 if not exist "%WORK%\nul" md "%WORK%"
 if not exist "%WORK%\Temp\nul" md "%WORK%\Temp"
-set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70526-ESXi-10.3.5-10430147.iso
+set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70526-ESXi-10.3.5-10430147-2019-01-17.iso
 if %FOUND% equ 0 goto ISO
 if "%~dp0" neq "%CD%\" goto Working
 for %%f in (%WORK%\DVD\nul %WORK%\install.esd %WORK%\%ISO_FILE%) do if exist %%f goto Clear
@@ -212,7 +212,7 @@ dism /Quiet /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf
 echo %TIME% Removing en-US from Install image %1
 dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
 echo %TIME% Adding en-GB and updates to Install image %1
-dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4480961-x64_ada63f8d66b2c9994e03c3f5bffe56aff77edeb6.msu" /ScratchDir:"%WORK%\Temp"
+dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4480977-x64_4630376d446938345665e2ce8379d96bb63a84c8.msu" /ScratchDir:"%WORK%\Temp"
 echo %TIME% Setting locale to en-GB in Install image %1
 dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
 rem Add .NET Framework 3.5 on-demand package
