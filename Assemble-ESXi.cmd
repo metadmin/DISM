@@ -6,6 +6,9 @@
 @setlocal
 @echo off
 
+:: Set this to be non-empty to leave Windows Defender enabled during the process.
+set LEAVE_DEFENDER=
+
 rem Must be run elevated
 whoami /groups | find "S-1-16-12288" > nul
 if errorlevel 1 goto ADK
@@ -31,6 +34,29 @@ set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70
 if %FOUND% equ 0 goto ISO
 if "%~dp0" neq "%CD%\" goto Working
 for %%f in (%WORK%\DVD\nul %WORK%\install.esd %WORK%\%ISO_FILE%) do if exist %%f goto Clear
+
+for /f "delims=" %%D in ('powershell -Command "(Get-MpPreference).DisableRealtimeMonitoring"') do set DEFENDER=%%D
+if "%LEAVE_DEFENDER%" equ "" goto Continue
+if "%DEFENDER%" equ "True" goto Continue
+pushd "%WORK%"
+set XD='%CD%'
+:: This will result in either True (%WORK% included in exclusions), False (%WORK% not included in
+:: exclusions), or empty (no exclusions defined)
+for /f "delims=" %%D in ('powershell -Command "(Get-MpPreference).ExclusionPath.Contains(%XD%)"') do set DEFENDER_EXCLUSION=%%D
+popd
+if "%DEFENDER_EXCLUSION%" equ "True" (
+  echo Warning - Windows Defender is running
+  echo This is likely to result in a 3-5%% performance hit
+) else (
+  echo Warning - Windows Defender is running and %WORK% is not excluded
+  echo This is likely to result in a 30-35%% performance hit
+)
+echo You can either manually disable Windows Defender, or set LEAVE_DEFENDER=
+echo in this script.
+set DEFENDER=
+timeout /t 5
+:Continue
+if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealtimeMonitoring $true"
 
 rem Duplicate the DVD
 robocopy "%~dp0ESXi-10.3.5-10430147\ " "%WORK%\Drivers\ " /mir
@@ -74,6 +100,7 @@ dism /Quiet /Image:"%IMAGE%" /Set-TimeZone:"GMT Standard Time"
 
 call :WaitJobs %T%
 
+if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealtimeMonitoring $true"
 for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
@@ -105,6 +132,7 @@ call :ProcessImage %IMAGE_COUNT%
 
 call :WaitJobs %T%
 
+if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealtimeMonitoring $true"
 for /l %%I in (1,1,%IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
@@ -120,6 +148,8 @@ findstr /v cpi "%WORK%\Autounattend-ESXi.xml" > "%WORK%\DVD\Autounattend.xml"
 
 rem Create the .iso
 oscdimg -lSSS_X64FREV_EN-US_DV9 -m -o -u2 -udfver102 -bootdata:"2#p0,e,b%WORK%\DVD\boot\etfsboot.com#pEF,e,b%WORK%\DVD\efi\microsoft\boot\efisys.bin" "%WORK%\DVD" "%WORK%\%ISO_FILE%"
+
+if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealtimeMonitoring $false"
 
 echo %WORK% may be deleted; %ISO_FILE% has been written.
 
