@@ -28,7 +28,7 @@ set FOUND=0
 if exist %1\sources\install.esd set FOUND=1
 if exist %1\sources\install.wim set FOUND=1
 
-:: if exist doesn't support quotes...
+:: if exist doesn't support quotes for directory testing...
 pushd "%WORK%\Temp" && popd || md "%WORK%\Temp"
 set ISO_FILE=SW_DVD9_Win_Server_STD_CORE_2016_64Bit_English_-4_DC_STD_MLF_X21-70526-ESXi-10.3.5-10430147-2019-01-17.iso
 if %FOUND% equ 0 goto ISO
@@ -86,11 +86,28 @@ call :InjectBootDrivers %BOOT_IMAGE_COUNT%
 set IMAGE=%WORK%\Mount-%BOOT_IMAGE_COUNT%
 rem Only doing this in Index 2 in case there are other .cabs which should be installed to Image 1
 echo %TIME% Removing en-US packages from Boot Image 2
-dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-WinPE-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-EnhancedStorage-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Scripting-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SecureStartup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-Setup-Server-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-SRT-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WDS-Tools-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"WinPE-WMI-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
+dism /Quiet /Image:"%IMAGE%" /Remove-Package ^
+     /PackageName:"Microsoft-Windows-WinPE-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-EnhancedStorage-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-Scripting-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-SecureStartup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-Setup-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-Setup-Server-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-SRT-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-WDS-Tools-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"WinPE-WMI-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0"
 rem @@DRA The cabinet files contain .mum files which will include the names of packages which are available - this would allow
 rem       us to detect all the en-gb packages and swap them for en-US
 echo %TIME% Adding en-GB packages to Boot Image 2
-dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\lp.cab" /PackagePath:"%WORK%\en-gb\WinPE-EnhancedStorage_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Scripting_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SecureStartup_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-Setup-Server_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-SRT_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WDS-Tools_en-gb.cab" /PackagePath:"%WORK%\en-gb\WinPE-WMI_en-gb.cab" /ScratchDir:"%WORK%\Temp"
+dism /Quiet /Image:"%IMAGE%" /Add-Package /ScratchDir:"%WORK%\Temp" ^
+     /PackagePath:"%WORK%\en-gb\lp.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-EnhancedStorage_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-Scripting_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-SecureStartup_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-Setup-Server_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-SRT_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-WDS-Tools_en-gb.cab" ^
+     /PackagePath:"%WORK%\en-gb\WinPE-WMI_en-gb.cab"
 echo %TIME% Regenerating lang.ini
 dism /Quiet /Image:"%IMAGE%" /Distribution:"%WORK%\DVD" /Gen-LangINI
 echo %TIME% Copying lang.ini to boot image
@@ -149,12 +166,15 @@ rem del "%WORK%\DVD\sources\install.wim"
 rem Add the Setup script (accepts the EULA and changes the San Policy to Online All)
 findstr /v cpi "%WORK%\Autounattend-ESXi.xml" > "%WORK%\DVD\Autounattend.xml"
 
-rem Create the .iso
+echo %TIME% Generating new ISO
+:: https://support.microsoft.com/en-gb/help/947024/how-to-create-an-iso-image-for-uefi-platforms-for-a-windows-pe-cd-rom
+:: contains a full explanation of the call.
+:: TL;DR no size limit; optimized; UDF 1.02 only; BIOS & EFI boot options
 oscdimg -lSSS_X64FREV_EN-US_DV9 -m -o -u2 -udfver102 -bootdata:"2#p0,e,b%WORK%\DVD\boot\etfsboot.com#pEF,e,b%WORK%\DVD\efi\microsoft\boot\efisys.bin" "%WORK%\DVD" "%WORK%\%ISO_FILE%"
 
 if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealtimeMonitoring $false"
 
-echo %WORK% may be deleted; %ISO_FILE% has been written.
+echo %TIME% %WORK% may be deleted; %ISO_FILE% has been written.
 
 goto :EOF
 
@@ -182,7 +202,9 @@ goto :EOF
 
 :InjectBootDrivers
 echo %TIME% Injecting boot drivers into %WORK%\Mount-%1
-dism /Quiet /Image:"%WORK%\Mount-%1" /Add-Driver /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
+dism /Quiet /Image:"%WORK%\Mount-%1" /Add-Driver ^
+     /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" ^
+     /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
 goto :EOF
 
 :Job_Boot
@@ -211,16 +233,50 @@ goto :EOF
 :ProcessImage
 set IMAGE=%WORK%\Mount-%1
 echo %TIME% Injecting drivers into Install image %1
-dism /Quiet /Image:"%IMAGE%" /Add-Driver /Driver:"%WORK%\Drivers\efifw\efifw.inf" /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" /Driver:"%WORK%\Drivers\vmci\device\Win8\vmci.inf" /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
+dism /Quiet /Image:"%IMAGE%" /Add-Driver ^
+     /Driver:"%WORK%\Drivers\efifw\efifw.inf" ^
+     /Driver:"%WORK%\Drivers\mouse\vmmouse.inf" ^
+     /Driver:"%WORK%\Drivers\mouse\vmusbmouse.inf" ^
+     /Driver:"%WORK%\Drivers\pvscsi\pvscsi.inf" ^
+     /Driver:"%WORK%\Drivers\video_wddm\vm3d.inf" ^
+     /Driver:"%WORK%\Drivers\vmci\device\Win8\vmci.inf" ^
+     /Driver:"%WORK%\Drivers\vmxnet3\Win8\vmxnet3.inf"
 echo %TIME% Removing en-US from Install image %1
-dism /Quiet /Image:"%IMAGE%" /Remove-Package /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" /PackageName:"Microsoft-Windows-LanguageFeatures-Handwriting-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" /PackageName:"Microsoft-Windows-LanguageFeatures-OCR-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" /PackageName:"Microsoft-Windows-LanguageFeatures-Speech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" /PackageName:"Microsoft-Windows-LanguageFeatures-TextToSpeech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0"
-echo %TIME% Adding en-GB and updates to Install image %1
-dism /Quiet /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-OCR-en-gb-Package.cab" /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-Handwriting-en-gb-Package.cab" /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-Speech-en-gb-Package.cab" /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-TextToSpeech-en-gb-Package.cab" /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" /PackagePath:"%WORK%\Updates\windows10.0-kb4480977-x64_4630376d446938345665e2ce8379d96bb63a84c8.msu" /ScratchDir:"%WORK%\Temp"
-echo %TIME% Setting locale to en-GB in Install image %1
-dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
+dism /Quiet /Image:"%IMAGE%" /Remove-Package ^
+     /PackageName:"Microsoft-Windows-Server-LanguagePack-Package~31bf3856ad364e35~amd64~en-US~10.0.14393.0" ^
+     /PackageName:"Microsoft-Windows-LanguageFeatures-Handwriting-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" ^
+     /PackageName:"Microsoft-Windows-LanguageFeatures-OCR-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" ^
+     /PackageName:"Microsoft-Windows-LanguageFeatures-Speech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" ^
+     /PackageName:"Microsoft-Windows-LanguageFeatures-TextToSpeech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0"
 rem Add .NET Framework 3.5 on-demand package
 rem @@@DRA Not doing this for now -- not sure why it was done in 2015 for the Windows 10 image
+rem        If this is restored, it must go before the updates!
 rem dism /Image:"%IMAGE%" /Add-Package /PackagePath:"%WORK%\DVD\sources\sxs\microsoft-windows-netfx3-ondemand-package.cab"
+:: Order matters! Add:
+::   - language pack (from Server 2016 Language Pack ISO)
+::   - language Features on Demand (FOD - from Windows 10 LTSB 2016 FOD ISO - i.e. Windows 10 1607)
+::       Note that if these are not added offline then they will be added automatically by Windows
+::       Update and the cumulative update will need re-applying
+::   - Service Stack Updates
+::       At present, KB4132216 (17 May 2018) and KB4465659 (13 Nov 2018)
+::       Note that although KB4465659 replaces KB4132216, it's not a cumulative update
+::       These updates must be applied before any other updates
+::   - Miscellaneous updates
+::       Intel Microcode Update KB4091664 v6
+::   - Latest Cumulative Update
+echo %TIME% Adding en-GB and updates to Install image %1
+dism /Quiet /Image:"%IMAGE%" /Add-Package /ScratchDir:"%WORK%\Temp" ^
+     /PackagePath:"%WORK%\en-gb\x64fre_Server_en-gb_lp.cab" ^
+     /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-OCR-en-gb-Package.cab" ^
+     /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-Handwriting-en-gb-Package.cab" ^
+     /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-Speech-en-gb-Package.cab" ^
+     /PackagePath:"%WORK%\en-gb\Microsoft-Windows-LanguageFeatures-TextToSpeech-en-gb-Package.cab" ^
+     /PackagePath:"%WORK%\Updates\windows10.0-kb4132216-x64_9cbeb1024166bdeceff90cd564714e1dcd01296e.msu" ^
+     /PackagePath:"%WORK%\Updates\windows10.0-kb4465659-x64_af8e00c5ba5117880cbc346278c7742a6efa6db1.msu" ^
+     /PackagePath:"%WORK%\Updates\windows10.0-kb4091664-v6-x64_cb6f102b635f103e00988750ca129709212506d6.msu" ^
+     /PackagePath:"%WORK%\Updates\windows10.0-kb4480977-x64_4630376d446938345665e2ce8379d96bb63a84c8.msu"
+echo %TIME% Setting locale to en-GB in Install image %1
+dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
 goto :EOF
 
 :Mount
