@@ -277,6 +277,8 @@ dism /Quiet /Image:"%IMAGE%" /Add-Package /ScratchDir:"%WORK%\Temp" ^
      /PackagePath:"%WORK%\Updates\windows10.0-kb4480977-x64_4630376d446938345665e2ce8379d96bb63a84c8.msu"
 echo %TIME% Setting locale to en-GB in Install image %1
 dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
+echo %TIME% Rebasing image
+dism /Quiet /Image:"%IMAGE%" /StartComponentCleanup /ResetBase
 goto :EOF
 
 :Mount
