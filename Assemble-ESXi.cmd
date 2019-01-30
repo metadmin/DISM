@@ -124,7 +124,11 @@ if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealti
 for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
-echo %TIME% Unmounting boot images done
+
+move "%WORK%\DVD\sources\boot.wim" "%WORK%\Temp\bloated.wim"
+echo %TIME% Compacting boot.wim
+for /l %%I IN (1,1,%BOOT_IMAGE_COUNT%) do dism /Quiet /Export-Image /SourceImageFile:"%WORK%\Temp\bloated.wim" /SourceIndex:%%I /DestinationImageFile:"%WORK%\DVD\sources\boot.wim"
+del "%WORK%\Temp\bloated.wim"
 
 rem If install.wim is compressed, extract it. Assume that Professional edition is Index 1
 if exist "%WORK%\DVD\sources\install.esd" (
@@ -156,7 +160,11 @@ if "%DEFENDER%" equ "False" powershell -Command "Set-MpPreference -DisableRealti
 for /l %%I in (1,1,%IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
-echo %TIME% Unmounting installation images done
+
+move "%WORK%\DVD\sources\install.wim" "%WORK%\Temp\bloated.wim"
+echo %TIME% Compacting install.wim
+for /l %%I IN (1,1,%IMAGE_COUNT%) do dism /Quiet /Export-Image /SourceImageFile:"%WORK%\Temp\bloated.wim" /SourceIndex:%%I /DestinationImageFile:"%WORK%\DVD\sources\install.wim"
+del "%WORK%\Temp\bloated.wim"
 
 rem Drivers and updates will make install.wim too large for a DVD - (re)compress to install.esd
 rem @@DRA Not doing this yet - don't know if it's needed (and updates not being installed)
