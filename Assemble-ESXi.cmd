@@ -256,6 +256,16 @@ dism /Quiet /Image:"%IMAGE%" /Remove-Package ^
      /PackageName:"Microsoft-Windows-LanguageFeatures-OCR-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" ^
      /PackageName:"Microsoft-Windows-LanguageFeatures-Speech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0" ^
      /PackageName:"Microsoft-Windows-LanguageFeatures-TextToSpeech-en-us-Package~31bf3856ad364e35~amd64~~10.0.14393.0"
+echo %TIME% Removing all non-GB LanguageFeatures-Basic packages from Install image %1
+setlocal enabledelayedexpansion
+set DISM=dism /Quiet /Image:"%IMAGE%" /Remove-Package
+for /f "tokens=4" %%P in ('dism /Image:"%IMAGE%" /Get-Packages ^| findstr /R /C:"Package Identity : Microsoft-Windows-LanguageFeatures-Basic-"') do (
+  for /f "tokens=5,6 delims=-" %%L in ('echo %%P') do (
+    if "%%L-%%M" neq "en-gb" set DISM=!DISM! /PackageName:"%%P"
+  )
+)
+%DISM%
+endlocal
 rem Add .NET Framework 3.5 on-demand package
 rem @@@DRA Not doing this for now -- not sure why it was done in 2015 for the Windows 10 image
 rem        If this is restored, it must go before the updates!
