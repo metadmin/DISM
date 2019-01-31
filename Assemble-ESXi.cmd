@@ -125,7 +125,7 @@ for /l %%I in (1,1,%BOOT_IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
 
-move "%WORK%\DVD\sources\boot.wim" "%WORK%\Temp\bloated.wim"
+move "%WORK%\DVD\sources\boot.wim" "%WORK%\Temp\bloated.wim" > nul
 echo %TIME% Compacting boot.wim
 for /l %%I IN (1,1,%BOOT_IMAGE_COUNT%) do dism /Quiet /Export-Image /SourceImageFile:"%WORK%\Temp\bloated.wim" /SourceIndex:%%I /DestinationImageFile:"%WORK%\DVD\sources\boot.wim"
 del "%WORK%\Temp\bloated.wim"
@@ -161,7 +161,7 @@ for /l %%I in (1,1,%IMAGE_COUNT%) do (
   call :Unmount "%WORK%\Mount-%%I"
 )
 
-move "%WORK%\DVD\sources\install.wim" "%WORK%\Temp\bloated.wim"
+move "%WORK%\DVD\sources\install.wim" "%WORK%\Temp\bloated.wim" > nul
 echo %TIME% Compacting install.wim
 for /l %%I IN (1,1,%IMAGE_COUNT%) do dism /Quiet /Export-Image /SourceImageFile:"%WORK%\Temp\bloated.wim" /SourceIndex:%%I /DestinationImageFile:"%WORK%\DVD\sources\install.wim"
 del "%WORK%\Temp\bloated.wim"
