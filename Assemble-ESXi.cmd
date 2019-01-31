@@ -295,6 +295,8 @@ dism /Quiet /Image:"%IMAGE%" /Add-Package /ScratchDir:"%WORK%\Temp" ^
      /PackagePath:"%WORK%\Updates\windows10.0-kb4480977-x64_4630376d446938345665e2ce8379d96bb63a84c8.msu"
 echo %TIME% Setting locale to en-GB in Install image %1
 dism /Quiet /Image:"%IMAGE%" /Set-AllIntl:en-GB
+echo %TIME% Copying KB890830 v5.68 to system root of Install image %1
+copy "%WORK%\Updates\Windows-KB890830-x64-V5.68.exe" "%IMAGE%\" > nul
 echo %TIME% Rebasing Install image %1
 dism /Quiet /Image:"%IMAGE%" /Cleanup-Image /StartComponentCleanup /ResetBase
 goto :EOF

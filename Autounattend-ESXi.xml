@@ -14,5 +14,21 @@
             </UserData>
         </component>
     </settings>
+    <settings pass="specialize">
+        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <RunSynchronous>
+                <RunSynchronousCommand wcm:action="add">
+                    <Description>Run MSRT</Description>
+                    <Order>1</Order>
+                    <Path>%SystemDrive%\Windows-KB890830-x64-V5.68.exe /quiet</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>2</Order>
+                    <Description>Remove MSRT binary</Description>
+                    <Path>powershell -Command &quot;Remove-Item $Env:SystemDrive\Windows-KB890830-x64-V5.68.exe&quot;</Path>
+                </RunSynchronousCommand>
+            </RunSynchronous>
+        </component>
+    </settings>
     <cpi:offlineImage cpi:source="wim:d:/working/dvd/sources/install.wim#Windows Server 2016 SERVERSTANDARDCORE" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
 </unattend>
